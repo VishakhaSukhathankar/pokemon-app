@@ -1,22 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardMedia, CardContent, SvgIcon } from '@mui/material';
-import {Weight, Height} from "../../assets";
+import { Weight, Height } from "../../assets";
 
-const PokemonCard = ({pokemonName}) => {
-    const [pokemonDetails, setPokemonDetails] = useState([]);
-    const [pokemonDesc, setpokemonDesc] = useState([]);
+// Cache for Pokemon details and descriptions
+const pokemonCache = {};
+
+const PokemonCard = ({ pokemonName }) => {
+    const [pokemonDetails, setPokemonDetails] = useState(null);
+    const [pokemonDesc, setPokemonDesc] = useState(null);
+
     useEffect(() => {
-        fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`).then(res => res.json()).then(response => {
-            setPokemonDetails(response);
-        })
-    }, []);
+        if (pokemonCache[pokemonName]) {
+            // Use cached data if available
+            setPokemonDetails(pokemonCache[pokemonName].details);
+            setPokemonDesc(pokemonCache[pokemonName].desc);
+        } else {
+            fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+                .then(res => res.json())
+                .then(response => {
+                    setPokemonDetails(response);
+                    // Cache the fetched details
+                    pokemonCache[pokemonName] = { details: response, desc: null };
+                });
+        }
+    }, [pokemonName]);
+
     useEffect(() => {
-        fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`).then(res => res.json()).then(response => {
-            setpokemonDesc(response?.flavor_text_entries?.filter(_ => _.language.name === "en").map(_ => _.flavor_text)[0].toString());
-        })
-    }, []);
-    console.log(pokemonDetails, "pokemonDetails");
-    console.log(pokemonDesc, "pokemonDesc");
+        if (pokemonCache[pokemonName]?.desc) {
+            // Use cached description if available
+            setPokemonDesc(pokemonCache[pokemonName].desc);
+        } else {
+            fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`)
+                .then(res => res.json())
+                .then(response => {
+                    const description = response?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
+                    setPokemonDesc(description);
+                    // Cache the fetched description
+                    if (pokemonCache[pokemonName]) {
+                        pokemonCache[pokemonName].desc = description;
+                    } else {
+                        pokemonCache[pokemonName] = { details: null, desc: description };
+                    }
+                });
+        }
+    }, [pokemonName]);
+
+    if (!pokemonDetails || !pokemonDesc) {
+        // Add a loading state while data is being fetched
+        return <p>Loading...</p>;
+    }
+
+    // Rest of the component remains the same
     return (
         <Card sx={{ height: 370 }}>
             <CardContent>
@@ -47,7 +81,7 @@ const PokemonCard = ({pokemonName}) => {
                 <p className='description'>{pokemonDesc }</p>
             </CardContent>
         </Card>
-    )
+    );
 }
 
 export default PokemonCard;
