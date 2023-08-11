@@ -9,8 +9,17 @@ const PokemonCard = ({ pokemonName }) => {
     const [pokemonDesc, setPokemonDesc] = useState(null);
 
     const openDB = async () => {
-        const request = window.indexedDB.open('PokemonCache', 1);
+        const request = window.indexedDB.open('PokemonDB', 1);
         return new Promise((resolve, reject) => {
+            request.onupgradeneeded = event => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('details')) {
+                    db.createObjectStore('details');
+                }
+                if (!db.objectStoreNames.contains('descriptions')) {
+                    db.createObjectStore('descriptions');
+                }
+            };
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
