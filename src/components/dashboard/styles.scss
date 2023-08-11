@@ -64,6 +64,10 @@
             background: #E6EFE0;
             text-transform: capitalize;
             box-shadow: none;
+            &:disabled{
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
             .arw-right{
                 padding: 0 0 0 8px;
                 display: inline-block;

@@ -1,58 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardMedia, CardContent, SvgIcon } from '@mui/material';
 import { Weight, Height } from "../../assets";
+import { Link } from 'react-router-dom';
 
-// Cache for Pokemon details and descriptions
-const pokemonCache = {};
 
 const PokemonCard = ({ pokemonName }) => {
     const [pokemonDetails, setPokemonDetails] = useState(null);
     const [pokemonDesc, setPokemonDesc] = useState(null);
 
-    useEffect(() => {
-        if (pokemonCache[pokemonName]) {
-            // Use cached data if available
-            setPokemonDetails(pokemonCache[pokemonName].details);
-            setPokemonDesc(pokemonCache[pokemonName].desc);
-        } else {
-            fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
-                .then(res => res.json())
-                .then(response => {
-                    setPokemonDetails(response);
-                    // Cache the fetched details
-                    pokemonCache[pokemonName] = { details: response, desc: null };
-                });
+    const openDB = async () => {
+        const request = window.indexedDB.open('PokemonDB', 1);
+        return new Promise((resolve, reject) => {
+            request.onupgradeneeded = event => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('details')) {
+                    db.createObjectStore('details');
+                }
+                if (!db.objectStoreNames.contains('descriptions')) {
+                    db.createObjectStore('descriptions');
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    };
+
+    const getPokemonDetails = async () => {
+        try {
+            const db = await openDB();
+            const tx = db.transaction(['details'], 'readonly');
+            const store = tx.objectStore('details');
+            const cachedDataRequest = store.get(pokemonName);
+
+            cachedDataRequest.onsuccess = () => {
+                const cachedData = cachedDataRequest.result;
+                if (cachedData) {
+                    setPokemonDetails(cachedData);
+                } else {
+                    fetchDetailsAndCache(db);
+                }
+            };
+        } catch (error) {
+            console.error('Error fetching details:', error);
         }
-    }, [pokemonName]);
+    };
+
+    const fetchDetailsAndCache = async (db) => {
+        try {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
+            const details = await response.json();
+            setPokemonDetails(details);
+
+            const tx = db.transaction(['details'], 'readwrite');
+            const store = tx.objectStore('details');
+            store.put(details, pokemonName);
+        } catch (error) {
+            console.error('Error fetching details from API:', error);
+        }
+    };
+
+    const getPokemonDescription = async () => {
+        try {
+            const db = await openDB();
+            const tx = db.transaction(['descriptions'], 'readonly');
+            const store = tx.objectStore('descriptions');
+            const cachedDataRequest = store.get(pokemonName);
+
+            cachedDataRequest.onsuccess = () => {
+                const cachedData = cachedDataRequest.result;
+                if (cachedData) {
+                    setPokemonDesc(cachedData);
+                } else {
+                    fetchDescriptionAndCache(db);
+                }
+            };
+        } catch (error) {
+            console.error('Error fetching description:', error);
+        }
+    };
+
+    const fetchDescriptionAndCache = async (db) => {
+        try {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`);
+            const speciesData = await response.json();
+            const description = speciesData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
+            setPokemonDesc(description);
+
+            const tx = db.transaction(['descriptions'], 'readwrite');
+            const store = tx.objectStore('descriptions');
+            store.put(description, pokemonName);
+        } catch (error) {
+            console.error('Error fetching description from API:', error);
+        }
+    };
 
     useEffect(() => {
-        if (pokemonCache[pokemonName]?.desc) {
-            // Use cached description if available
-            setPokemonDesc(pokemonCache[pokemonName].desc);
-        } else {
-            fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`)
-                .then(res => res.json())
-                .then(response => {
-                    const description = response?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
-                    setPokemonDesc(description);
-                    // Cache the fetched description
-                    if (pokemonCache[pokemonName]) {
-                        pokemonCache[pokemonName].desc = description;
-                    } else {
-                        pokemonCache[pokemonName] = { details: null, desc: description };
-                    }
-                });
-        }
+        getPokemonDetails();
+        getPokemonDescription();
     }, [pokemonName]);
 
     if (!pokemonDetails || !pokemonDesc) {
-        // Add a loading state while data is being fetched
         return <p>Loading...</p>;
     }
 
-    // Rest of the component remains the same
     return (
         <Card sx={{ height: 370 }}>
+            <Link to={`/pokemon/${pokemonDetails?.name}`}>
             <CardContent>
                 <div className='header-wrap'>
                     <div className='badge'></div>
@@ -79,7 +132,8 @@ const PokemonCard = ({ pokemonName }) => {
                 </CardContent>
                 <p className='name'>{ pokemonDetails?.name }</p>
                 <p className='description'>{pokemonDesc }</p>
-            </CardContent>
+                </CardContent>
+                </Link>
         </Card>
     );
 }
