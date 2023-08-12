@@ -8,7 +8,6 @@ const dbName = 'PokeAPICache';
 const version = 1;
 
 const PokemonCard = (props) => {
-    console.log(props, "props")
     const { pokemonName, evolutionClass } = props;
     const [pokemonDetails, setPokemonDetails] = useState(null);
     const [pokemonDesc, setPokemonDesc] = useState(null);
@@ -39,6 +38,8 @@ const PokemonCard = (props) => {
     };
 
     useEffect(() => {
+        getPokemonDetails();
+        getPokemonDescription()
         cacheEndpointData(dbName, version, 'descriptions', pokemonName , getPokemonDescription);
         cacheEndpointData(dbName, version, 'details', pokemonName, getPokemonDetails);
     }, [pokemonName]);
@@ -47,12 +48,17 @@ const PokemonCard = (props) => {
         return <p>Loading...</p>;
     }
 
+    const badge = Object.values(pokemonDetails?.types)?.map(_ => _.type.name)
+
+    console.log(badge, "pokemonDetails")
     return (
         <Card sx={{ height: 370 }} className={evolutionClass}>
             <Link to={`/pokemon/${pokemonDetails?.name}`}>
             <CardContent>
                 <div className='header-wrap'>
-                    <div className='badge'></div>
+                    <div className='badge'>
+                            {badge.map(name => <span className={ `type-${name}`}>{ name }</span>)}
+                    </div>
                     <div className='height'>
                         <SvgIcon aria-label="height" sx={{ padding: 0 }}>
                             <Height sx={{ height: 38, width: 38 }} />
