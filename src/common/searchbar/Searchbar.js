@@ -24,7 +24,7 @@ const SearchBar = () => {
   };
   const handlePokemonSearch = (evt) => {
     evt.preventDefault();
-    console.log("Pokemon Data->>>", pokemonName);
+    // console.log("Pokemon Data->>>", pokemonName);
 
     setPokemonName("");
   };
@@ -41,11 +41,11 @@ const SearchBar = () => {
       const details = await response.json();
       setSearchedPokemonDetails(details);
       const abc = Object.values(details.results).map((val)=>val.name)
-      console.log('abc->>>>',abc)
+      // console.log('abc->>>>',abc)
       const tx = db.transaction(["pokemonNameDetails"], "readwrite");
       const store = tx.objectStore("pokemonNameDetails");
       store.put(abc, "pokemonName");
-      console.log(store);
+      // console.log(store);
     } catch (error) {
       console.error("Error fetching details from API:", error);
     }

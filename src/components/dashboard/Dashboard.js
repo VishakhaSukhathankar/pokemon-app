@@ -1,67 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Button } from '@mui/material';
 import PokemonCard from './Pokemon-card';
-import {ArrowLeft, ArrowRight} from "../../assets";
+import { ArrowLeft, ArrowRight } from "../../assets";
+import { openDB, cacheData, getCachedData } from "../../utils/helpers/IndexedDBUtility";
 import "./styles.scss";
 
 const Dashboard = () => {
     const [data, setData] = useState([]);
     const [pageNumber, setPageNumber] = useState(0);
 
-    const openDB = async () => {
-        const request = window.indexedDB.open('PokeAPICache', 1);
-        return new Promise((resolve, reject) => {
-            request.onupgradeneeded = event => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('pokemonData')) {
-                    db.createObjectStore('pokemonData');
-                }
-            };
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    };
-
     const fetchData = async (page) => {
         try {
-            const dataFromCache = await getCachedData(page);
+            const db = await openDB("PokeAPICache", 1);
+            const dataFromCache = await getCachedData(db, 'pokemonData', page);
             if (dataFromCache) {
                 setData(dataFromCache);
             } else {
                 const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${page}&limit=8`);
                 const responseData = await response.json();
                 const fetchedData = responseData.results;
-
-                await cacheData(page, fetchedData);
-
+                await cacheData(db, 'pokemonData', page, fetchedData);
                 setData(fetchedData);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-    };
-
-    const getCachedData = async (page) => {
-        const db = await openDB();
-        const tx = db.transaction(['pokemonData'], 'readonly');
-        const store = tx.objectStore('pokemonData');
-        const cachedDataRequest = store.get(page);
-
-        return new Promise((resolve, reject) => {
-            cachedDataRequest.onsuccess = () => {
-                resolve(cachedDataRequest.result);
-            };
-            cachedDataRequest.onerror = () => {
-                reject(cachedDataRequest.error);
-            };
-        });
-    };
-
-    const cacheData = async (page, dataToCache) => {
-        const db = await openDB();
-        const tx = db.transaction(['pokemonData'], 'readwrite');
-        const store = tx.objectStore('pokemonData');
-        store.put(dataToCache, page);
     };
 
     useEffect(() => {
@@ -73,7 +36,6 @@ const Dashboard = () => {
             setPageNumber(pageNumber - 8);
         }
     };
-
     const handleNextClick = () => {
         setPageNumber(pageNumber + 8);
     };
