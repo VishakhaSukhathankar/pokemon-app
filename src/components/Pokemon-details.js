@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Grid, Card, CardMedia, CardContent, SvgIcon, Button } from '@mui/material';
+import { Box, Paper, Grid, Card } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { getCachedData, openDB, cacheData} from "../utils/helpers/IndexedDBUtility";
 import { styled } from '@mui/material/styles';
@@ -9,7 +9,6 @@ import "./styles.scss";
 import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
-import { ArrowLeft, ArrowRight, Weight, Height } from "../assets";
 import PokemonCard from './dashboard/Pokemon-card';
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -102,27 +101,6 @@ const PokemonDetails = () => {
                     <Grid item xs={16} sm={8} md={4} lg={4} xl={4}>
                         <Card>
                             <PokemonCard pokemonName={combinePokemonDetailsData?.name} classIdentifier="detail-section-left"/>
-                            <div className="pagination">
-                                <Button
-                                    // disabled={pageNumber <= 0}
-                                    // onClick={handlePrevClick}
-                                    variant="contained"
-                                >
-                                    <span className="arw-left">
-                                    <ArrowLeft />
-                                    </span>{" "}
-                                    Prev
-                                </Button>
-                                <Button
-                                    // onClick={handleNextClick}
-                                    variant="contained"
-                                >
-                                    Next{" "}
-                                    <span className="arw-right">
-                                    <ArrowRight />
-                                    </span>
-                                </Button>
-                            </div>
                         </Card>
                     </Grid>
                     <Grid item xs={16} sm={8} md={12} lg={12} xl={12}>
