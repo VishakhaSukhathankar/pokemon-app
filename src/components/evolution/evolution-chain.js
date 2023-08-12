@@ -1,8 +1,14 @@
 import PokemonCard from "../dashboard/Pokemon-card";
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 
 const EvoultionChain = (props) => {
     return <>
-        <PokemonCard evolutionClass="evolution-chain" pokemonName={props.name}/>
+        <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+                {props.name.map(name => <Grid item xs={3}><PokemonCard evolutionClass="evolution-chain" pokemonName={name}/></Grid>)}                
+            </Grid>
+        </Box>               
     </>;
 }
 

@@ -19,9 +19,28 @@
         }
     }
     .evolution-chain{
-        width: 128px;
-        height: 128px;
-        border-radius: 100%;
+        background:url('../../assets/shadow.svg') no-repeat top left;
+        background-size: cover;
+        width: 195px;
+        height: 200px;
+        box-shadow: none;
+        margin-left: -30px;
+        .evolution-wrap{
+            width: 128px;
+            height: 128px;
+            border-radius: 100%;
+            margin-top: 37px;
+            .name{
+                margin-top: 35px;
+                color: #146845;
+                text-align: center;
+                font-family: PT Sans;
+                font-size: 24px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 32px; /* 133.333% */
+            }
+        }
     }
     .name{
         color: #146845;

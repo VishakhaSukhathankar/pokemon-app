@@ -51,10 +51,21 @@ const PokemonCard = (props) => {
     return (
         <Card sx={{ height: 370 }} className={evolutionClass}>
             <Link to={`/pokemon/${pokemonDetails?.name}`}>
-                <CardContent>
+                {evolutionClass === "evolution-chain" ? (
+                    <CardContent className="evolution-wrap" sx={{ width: 128, height: 128, margin: "0 auto" }}>
+                        <CardMedia
+                            sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
+                            component="img"
+                            image={pokemonDetails?.sprites?.other?.dream_world?.front_default}
+                            alt={pokemonName}
+                        />
+                        <p className='name'>{ pokemonDetails?.name }</p>
+                    </CardContent>
+                ) : (
+                    <CardContent>
                     <div className='header-wrap'>
                         <div className='badge'>
-                                {badge.map(name => <span className={ `type-${name}`}>{ name }</span>)}
+                                {badge.map((name, ind) => <span key={ind} className={ `type-${name}`}>{ name }</span>)}
                         </div>
                         <div className='height'>
                             <SvgIcon aria-label="height" sx={{ padding: 0 }}>
@@ -80,6 +91,8 @@ const PokemonCard = (props) => {
                     <p className='name'>{ pokemonDetails?.name }</p>
                     <p className='description'>{pokemonDesc }</p>
                 </CardContent>
+                )}
+                
             </Link>
         </Card>
     );

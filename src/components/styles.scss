@@ -24,4 +24,11 @@
         line-height: 24px;
         text-transform: capitalize;
     }
+    .version-details{
+        p{
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+    }
 }
