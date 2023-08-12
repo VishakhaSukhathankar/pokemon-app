@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Paper, Grid, Card } from '@mui/material';
+import { Box, Paper, Grid, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { getCachedData, openDB, cacheData} from "../utils/helpers/IndexedDBUtility";
 import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 import EvoultionChain from './evolution/evolution-chain';
-import "./styles.scss";
-import LinearProgress, {
-  linearProgressClasses,
-} from "@mui/material/LinearProgress";
 import PokemonCard from './dashboard/Pokemon-card';
+import { ArrowLeft, ArrowRight } from "../assets";
+import "./styles.scss";
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -19,42 +17,28 @@ const Item = styled(Paper)(({ theme }) => ({
     color: theme.palette.text.secondary,
 }));
 
-const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
-    height: 5,
-    width: 120,
-    borderRadius: 5,
-    marginTop: 6,
-    [`&.${linearProgressClasses.colorPrimary}`]: {
-      backgroundColor:
-        theme.palette.grey[theme.palette.mode === "light" ? 200 : 800],
-    },
-    [`& .${linearProgressClasses.bar}`]: {
-      borderRadius: 5,
-      backgroundColor: theme.palette.mode === "light" ? "#EE3F3E" : "#EE3F3E",
-    },
-  }));
-
 const PokemonDetails = () => {
-    const { name } = useParams();
+    const { name, id } = useParams();
     const [evolutionChain, setevolutionChain] = useState(null);
     const [combinePokemonDetailsData, setcombinePokemonDetailsData] = useState(null);
+    const [pokemonIdDetails, setPokemonIdDetails] = useState(id);
 
     const combinePokemonData = () => {
         openDB("PokeAPICache", 1)
             .then(async db => {
-                const detailsFromCache = await getCachedData(db, 'combinePokemonDetails', name);
+                const detailsFromCache = await getCachedData(db, 'combinePokemonDetails', pokemonIdDetails);
                 if (detailsFromCache) {
                     setcombinePokemonDetailsData(detailsFromCache);
                 } else {
-                    const speciesResponse = fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`)
+                    const speciesResponse = fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonIdDetails}`)
                         .then(response => response.json());
-                    const detailsResponse = fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+                    const detailsResponse = fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonIdDetails}`)
                         .then(response_2 => response_2.json());
 
                     Promise.all([speciesResponse, detailsResponse])
                         .then(([speciesFromApi, detailsFromApi]) => {
                             const newCombinedData = {...speciesFromApi, ...detailsFromApi };
-                            cacheData(db, "combinePokemonDetails", name, newCombinedData);
+                            cacheData(db, "combinePokemonDetails", pokemonIdDetails, newCombinedData);
                             setcombinePokemonDetailsData(detailsFromApi);
                         })
                         .catch(error => {
@@ -69,15 +53,15 @@ const PokemonDetails = () => {
 
     useEffect(() => {
         combinePokemonData()
-    }, [name]);
+    }, [name, pokemonIdDetails]);
 
     useEffect(() => {
         const endpoint = combinePokemonDetailsData?.evolution_chain?.url;
         fetch(endpoint).then(res => res.json()).then(response => setevolutionChain(response))
-    }, [combinePokemonDetailsData?.evolution_chain?.url])
+    }, [combinePokemonDetailsData?.evolution_chain?.url], pokemonIdDetails)
 
-    const eggGroup = combinePokemonDetailsData?.egg_groups?.map(_ => _.name).join(", ");
-    const abilities = combinePokemonDetailsData?.abilities?.map(_ => _.ability.name).join(", ");
+    const eggGroup = combinePokemonDetailsData?.egg_groups?.map(_ => _.name).join("  ");
+    const abilities = combinePokemonDetailsData?.abilities?.map(_ => _.ability.name).join("  ");
     const storyDetail = combinePokemonDetailsData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
     function extractSpeciesNames(obj, result = []) {
         if (obj?.species && obj?.species?.name) {
@@ -91,24 +75,34 @@ const PokemonDetails = () => {
         return result;
       }
     const allSpeciesNames = extractSpeciesNames(evolutionChain?.chain);
-    const statsDetails = combinePokemonDetailsData?.stats.map((val, ind) => val.stat.name)
-    console.log(statsDetails, "statsDetails")
-    console.log(combinePokemonDetailsData, "combinePokemonDetailsData")
+    console.log(pokemonIdDetails, "combinePokemonDetailsData")
     return (combinePokemonDetailsData ? (
-        <section>
+        <section className='pokemon-detail-page'>
             <Box sx={{ flexGrow: 1 }}>
                 <Grid container spacing={2} columns={16}>
                     <Grid item xs={16} sm={8} md={4} lg={4} xl={4}>
-                        <Card>
-                            <PokemonCard pokemonName={combinePokemonDetailsData?.name} classIdentifier="detail-section-left"/>
-                        </Card>
+                        <PokemonCard pokemonName={combinePokemonDetailsData?.name} classIdentifier="detail-section-left" />                        
+                        <div className="pagination">
+                            <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails - 1)}>
+                                <span className="arw-left">
+                                    <ArrowLeft />
+                                </span>
+                                {` Prev #${String(+pokemonIdDetails - 1).padStart(4, '0')}`}
+                            </Button>
+                            <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails + 1)}>
+                                {`Next #${String(+pokemonIdDetails + 1).padStart(4, '0')}`}
+                                <span className="arw-right">
+                                    <ArrowRight />
+                                </span>
+                            </Button>
+                        </div>
                     </Grid>
                     <Grid item xs={16} sm={8} md={12} lg={12} xl={12}>
                         <Item className='pokemon-details'>
                             <div className='detail-wrap'>
                                     <h3 className='detail-title'>Versions</h3>
                                     <div className='version-details'>
-                                        {allSpeciesNames.map((name, ind)=> <Link key={ind} to={`/pokemon/${name}`}><p className='detail-desc'>{name}</p></Link>)}
+                                        {allSpeciesNames.map((name, ind)=> <Link key={ind} to={`/pokemon/${name}${id}`}><p className='detail-desc'>{name}</p></Link>)}
                                     </div>
                             </div>
                             <div className='detail-wrap'>
@@ -121,7 +115,7 @@ const PokemonDetails = () => {
                             </div>
                             <div className='detail-wrap'>
                                 <h3 className='detail-title'>Catch Rate</h3>
-                                <p className='detail-desc'>{ combinePokemonDetailsData?.capture_rate} %</p>
+                                <p className='detail-desc'>{ combinePokemonDetailsData?.capture_rate}%</p>
                             </div>
                             <div className='detail-wrap'>
                                 <h3 className='detail-title'>Egg group</h3>

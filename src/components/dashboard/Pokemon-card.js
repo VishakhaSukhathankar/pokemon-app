@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardMedia, CardContent, SvgIcon, Grid, Button } from '@mui/material';
-import { ArrowLeft, ArrowRight, Weight, Height } from "../../assets";
+import { Card, CardMedia, CardContent, SvgIcon, Grid } from '@mui/material';
+import { Weight, Height } from "../../assets";
 import { Link } from 'react-router-dom';
 import { openDB, cacheData, getCachedData } from "../../utils/helpers/IndexedDBUtility";
 import LinearProgress, {
@@ -64,7 +64,7 @@ const PokemonCard = (props) => {
     return (combinePokemonDetailsData ? (
         <Card sx={{ height: classIdentifier !== "detail-section-left" ? 370 : "auto" }} className={classIdentifier}>
                 {classIdentifier === "evolution-chain" ? (
-                    <Link to={`/pokemon/${combinePokemonDetailsData?.name}`}>
+                    <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
                         <CardContent className="evolution-wrap" sx={{ width: 128, height: 128, margin: "0 auto" }} >
                             <CardMedia
                                 sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
@@ -121,35 +121,14 @@ const PokemonCard = (props) => {
                                                 <span>{val.base_stat}</span>
                                             </div>
                                         </div>
-                                        <BorderLinearProgress variant="determinate" value={val.base_stat * 100 / 255} maxValue={100} />
+                                        <BorderLinearProgress variant="determinate" value={val.base_stat * 100 / 255} />
                                     </Grid>
                                 )
                             })}
                             </Grid>
-                            <div className="pagination">
-                                <Button
-                                    // disabled={pageNumber <= 0}
-                                    // onClick={handlePrevClick}
-                                    variant="contained"
-                                >
-                                    <span className="arw-left">
-                                    <ArrowLeft />
-                                    </span>{" "}
-                                    Prev
-                                </Button>
-                                <Button
-                                    // onClick={handleNextClick}
-                                    variant="contained"
-                                >
-                                    Next{" "}
-                                    <span className="arw-right">
-                                    <ArrowRight />
-                                    </span>
-                                </Button>
-                            </div>
                     </CardContent>
                 ) : (                        
-                <Link to={`/pokemon/${combinePokemonDetailsData?.name}`}>
+                <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
                     <CardContent>
                         <div className='header-wrap'>
                             <div className='badge'>
