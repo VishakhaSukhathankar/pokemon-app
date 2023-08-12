@@ -1,77 +1,110 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { getCachedData, cacheEndpointData, openDB} from "../utils/helpers/IndexedDBUtility";
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import "./styles.scss"
+import EvoultionChain from './evolution/evolution-chain';
+
 
 const PokemonDetails = () => {
-  const { name } = useParams();
+    const { name } = useParams();
     const [details, setDetails] = useState(null);
-
-    const openDB = async () => {
-        const request = window.indexedDB.open('PokemonDB', 1);
-        return new Promise((resolve, reject) => {
-            request.onupgradeneeded = event => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('details')) {
-                    db.createObjectStore('details');
-                }
-                if (!db.objectStoreNames.contains('descriptions')) {
-                    db.createObjectStore('descriptions');
-                }
-            };
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    };
-
-    const getPokemonDetails = async () => {
-        try {
-            const db = await openDB();
-            const tx = db.transaction(['details'], 'readonly');
-            const store = tx.objectStore('details');
-            const cachedDataRequest = store.get(name);
-
-            return new Promise((resolve, reject) => {
-                cachedDataRequest.onsuccess = () => {
-                    resolve(cachedDataRequest.result);
-                };
-                cachedDataRequest.onerror = () => {
-                    reject(cachedDataRequest.error);
-                };
-            });
-        } catch (error) {
-            console.error('Error fetching data from IndexedDB:', error);
-            return null;
-        }
-    };
-
-    useEffect(() => {
-        const fetchPokemonDetails = async () => {
-            const cachedDetails = await getPokemonDetails();
-            if (cachedDetails) {
-                setDetails(cachedDetails);
+    const [speciesDetails, setSpeciesDetails] = useState(null);
+    const [evolutionChain, setevolutionChain] = useState(null);
+    const dbName = 'PokeAPICache';
+    const version = 1;
+    const fetchData = async () => {
+        try {            
+            const db = await openDB("PokeAPICache", 1);
+            const detailsFromCache = await getCachedData(db, 'details', name);
+            if (detailsFromCache) {
+                setDetails(detailsFromCache);
             } else {
                 const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
                 const detailsFromApi = await response.json();
                 setDetails(detailsFromApi);
-
-                const db = await openDB();
-                const tx = db.transaction(['details'], 'readwrite');
-                const store = tx.objectStore('details');
-                store.put(detailsFromApi, name);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
-        fetchPokemonDetails();
+    const getSpeciesDetails = async () => {
+        try {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${name}`);
+            const newData = await response.json();
+            setSpeciesDetails(newData);
+            return newData;
+        } catch (error) {
+            console.error('Error fetching new data:', error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        getSpeciesDetails()
+        cacheEndpointData(dbName, version, 'speciesDetails', name, getSpeciesDetails);
     }, [name]);
+    useEffect(() => {
+        const endpoint = speciesDetails?.evolution_chain?.url;
+        fetch(endpoint).then(res => res.json()).then(response => setevolutionChain(response?.chain?.species?.name))
+    }, [speciesDetails?.evolution_chain?.url])
 
     if (!details) {
         return <p>Loading...</p>;
     }
-  return (
-    <div>
-      <h1>{details.name}</h1>
-      {/* Display other details as needed */}
-    </div>
-  );
+    const Item = styled(Paper)(({ theme }) => ({
+        backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+        ...theme.typography.body2,
+        padding: theme.spacing(1),
+        textAlign: 'center',
+        color: theme.palette.text.secondary,
+    }));
+    const eggGroup = speciesDetails?.egg_groups?.map(_ => _.name).join(", ");
+    const abilities = details?.abilities?.map(_ => _.ability.name).join(", ");
+    const storyDetail = speciesDetails?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
+    return (
+    <section>
+        <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+                <Grid item xs={4}>
+                    <Item>xs=8</Item>
+                </Grid>
+                <Grid item xs={8}>
+                    <Item className='pokemon-details'>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Versions</h3>
+                        </div>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Story</h3>
+                            <p className='detail-desc'>{storyDetail}</p>
+                        </div>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Abilities</h3>
+                            <p className='detail-desc'>{ abilities }</p>
+                        </div>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Catch Rate</h3>
+                            <p className='detail-desc'>{ speciesDetails?.capture_rate} %</p>
+                        </div>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Egg group</h3>
+                            <p className='detail-desc'>{ eggGroup }</p>
+                        </div>
+                        <div className='detail-wrap'>
+                            <h3 className='detail-title'>Evolution</h3>
+                            <EvoultionChain name={evolutionChain}/>
+                        </div>
+                    </Item>
+                </Grid>
+            </Grid>
+        </Box>
+    </section>
+    );
 }
 
 export default PokemonDetails;

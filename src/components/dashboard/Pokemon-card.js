@@ -2,101 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardMedia, CardContent, SvgIcon } from '@mui/material';
 import { Weight, Height } from "../../assets";
 import { Link } from 'react-router-dom';
+import { cacheEndpointData } from "../../utils/helpers/IndexedDBUtility";
 
+const dbName = 'PokeAPICache';
+const version = 1;
 
-const PokemonCard = ({ pokemonName }) => {
+const PokemonCard = (props) => {
+    console.log(props, "props")
+    const { pokemonName, evolutionClass } = props;
     const [pokemonDetails, setPokemonDetails] = useState(null);
     const [pokemonDesc, setPokemonDesc] = useState(null);
 
-    const openDB = async () => {
-        const request = window.indexedDB.open('PokemonDB', 1);
-        return new Promise((resolve, reject) => {
-            request.onupgradeneeded = event => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains('details')) {
-                    db.createObjectStore('details');
-                }
-                if (!db.objectStoreNames.contains('descriptions')) {
-                    db.createObjectStore('descriptions');
-                }
-            };
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-    };
-
     const getPokemonDetails = async () => {
-        try {
-            const db = await openDB();
-            const tx = db.transaction(['details'], 'readonly');
-            const store = tx.objectStore('details');
-            const cachedDataRequest = store.get(pokemonName);
-
-            cachedDataRequest.onsuccess = () => {
-                const cachedData = cachedDataRequest.result;
-                if (cachedData) {
-                    setPokemonDetails(cachedData);
-                } else {
-                    fetchDetailsAndCache(db);
-                }
-            };
-        } catch (error) {
-            console.error('Error fetching details:', error);
-        }
-    };
-
-    const fetchDetailsAndCache = async (db) => {
         try {
             const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
             const details = await response.json();
             setPokemonDetails(details);
-
-            const tx = db.transaction(['details'], 'readwrite');
-            const store = tx.objectStore('details');
-            store.put(details, pokemonName);
+            return details;
         } catch (error) {
-            console.error('Error fetching details from API:', error);
+            console.error('Error fetching new data:', error);
+            throw error;
         }
     };
 
     const getPokemonDescription = async () => {
         try {
-            const db = await openDB();
-            const tx = db.transaction(['descriptions'], 'readonly');
-            const store = tx.objectStore('descriptions');
-            const cachedDataRequest = store.get(pokemonName);
-
-            cachedDataRequest.onsuccess = () => {
-                const cachedData = cachedDataRequest.result;
-                if (cachedData) {
-                    setPokemonDesc(cachedData);
-                } else {
-                    fetchDescriptionAndCache(db);
-                }
-            };
-        } catch (error) {
-            console.error('Error fetching description:', error);
-        }
-    };
-
-    const fetchDescriptionAndCache = async (db) => {
-        try {
             const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`);
-            const speciesData = await response.json();
-            const description = speciesData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
-            setPokemonDesc(description);
-
-            const tx = db.transaction(['descriptions'], 'readwrite');
-            const store = tx.objectStore('descriptions');
-            store.put(description, pokemonName);
+            const newData = await response.json();
+            const description = newData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
+            setPokemonDesc(description)
+            return description;
         } catch (error) {
-            console.error('Error fetching description from API:', error);
+            console.error('Error fetching new data:', error);
+            throw error;
         }
     };
 
     useEffect(() => {
-        getPokemonDetails();
-        getPokemonDescription();
+        cacheEndpointData(dbName, version, 'descriptions', pokemonName , getPokemonDescription);
+        cacheEndpointData(dbName, version, 'details', pokemonName, getPokemonDetails);
     }, [pokemonName]);
 
     if (!pokemonDetails || !pokemonDesc) {
@@ -104,7 +48,7 @@ const PokemonCard = ({ pokemonName }) => {
     }
 
     return (
-        <Card sx={{ height: 370 }}>
+        <Card sx={{ height: 370 }} className={evolutionClass}>
             <Link to={`/pokemon/${pokemonDetails?.name}`}>
             <CardContent>
                 <div className='header-wrap'>

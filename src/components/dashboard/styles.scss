@@ -1,6 +1,11 @@
 .wrapper{
     width: 1400px;
     margin: 40px auto;
+    .evolution-chain{
+        width: 128px;
+        height: 128px;
+        border-radius: 100%;
+    }
     .name{
         color: #146845;
         font-family: PT Sans;
