@@ -3,18 +3,12 @@ const openDB = async (dbName, version) => {
   return new Promise((resolve, reject) => {
       request.onupgradeneeded = event => {
           const db = event.target.result;
-          if (!db.objectStoreNames.contains('details')) {
-              db.createObjectStore('details');
-          }
-          if (!db.objectStoreNames.contains('descriptions')) {
-              db.createObjectStore('descriptions');
-          }
           if (!db.objectStoreNames.contains('pokemonData')) {
             db.createObjectStore('pokemonData');
           }
-          if (!db.objectStoreNames.contains('speciesDetails')) {
-            db.createObjectStore('speciesDetails');
-          }
+          if (!db.objectStoreNames.contains('combinePokemonDetails')) {
+            db.createObjectStore('combinePokemonDetails');
+          }          
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -47,20 +41,4 @@ const getCachedData = async (db, objectStoreName, key) => {
 };
 
 
-const cacheEndpointData = async (dbName, version, objectStoreName, key, fetchFunction) => {
-  try {
-      const db = await openDB(dbName, version);
-      const cachedData = await getCachedData(db, objectStoreName, key);
-
-      if (!cachedData) {
-          const newData = await fetchFunction();
-          if (newData) {
-              await cacheData(db, objectStoreName, key, newData);
-          }
-      }
-  } catch (error) {
-      console.error('Error caching endpoint data:', error);
-  }
-};
-
-export { openDB, getCachedData, cacheData, cacheEndpointData };
+export { openDB, getCachedData, cacheData };

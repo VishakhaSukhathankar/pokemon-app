@@ -2,64 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardMedia, CardContent, SvgIcon } from '@mui/material';
 import { Weight, Height } from "../../assets";
 import { Link } from 'react-router-dom';
-import { cacheEndpointData } from "../../utils/helpers/IndexedDBUtility";
-
-const dbName = 'PokeAPICache';
-const version = 1;
+import { openDB, cacheData, getCachedData } from "../../utils/helpers/IndexedDBUtility";
 
 const PokemonCard = (props) => {
     const { pokemonName, evolutionClass } = props;
-    const [pokemonDetails, setPokemonDetails] = useState(null);
-    const [pokemonDesc, setPokemonDesc] = useState(null);
+    const [combinePokemonDetailsData, setcombinePokemonDetailsData] = useState(null);
 
-    const getPokemonDetails = async () => {
-        try {
-            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
-            const details = await response.json();
-            setPokemonDetails(details);
-            return details;
-        } catch (error) {
-            console.error('Error fetching new data:', error);
-            throw error;
-        }
-    };
+    const combinePokemonData = () => {
+        openDB("PokeAPICache", 1)
+            .then(async db => {
+                const detailsFromCache = await getCachedData(db, 'combinePokemonDetails', pokemonName);
+                if (detailsFromCache) {
+                    setcombinePokemonDetailsData(detailsFromCache);
+                } else {
+                    const speciesResponse = fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`)
+                        .then(response => response.json());
+                    const detailsResponse = fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+                        .then(response_2 => response_2.json());
 
-    const getPokemonDescription = async () => {
-        try {
-            const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`);
-            const newData = await response.json();
-            const description = newData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
-            setPokemonDesc(description)
-            return description;
-        } catch (error) {
-            console.error('Error fetching new data:', error);
-            throw error;
-        }
+                    Promise.all([speciesResponse, detailsResponse])
+                        .then(([speciesFromApi, detailsFromApi]) => {
+                            const newCombinedData = {...speciesFromApi, ...detailsFromApi };
+                            cacheData(db, "combinePokemonDetails", pokemonName, newCombinedData);
+                            setcombinePokemonDetailsData(detailsFromApi);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                        });
+                }
+            })
+            .catch(error => {
+                console.error('Error opening DB:', error);
+            });
     };
+    
 
     useEffect(() => {
-        getPokemonDetails();
-        getPokemonDescription()
-        cacheEndpointData(dbName, version, 'descriptions', pokemonName , getPokemonDescription);
-        cacheEndpointData(dbName, version, 'details', pokemonName, getPokemonDetails);
+        combinePokemonData();
     }, [pokemonName]);
 
-    if (!pokemonDetails || !pokemonDesc) {
+    if (!combinePokemonDetailsData) {
         return <p>Loading...</p>;
     }
-    const badge = Object.values(pokemonDetails?.types)?.map(_ => _.type.name)
+    const badge = Object.values(combinePokemonDetailsData?.types)?.map(_ => _.type.name);
+    const pokemonDescription = combinePokemonDetailsData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
     return (
         <Card sx={{ height: 370 }} className={evolutionClass}>
-            <Link to={`/pokemon/${pokemonDetails?.name}`}>
+            <Link to={`/pokemon/${combinePokemonDetailsData?.name}`}>
                 {evolutionClass === "evolution-chain" ? (
                     <CardContent className="evolution-wrap" sx={{ width: 128, height: 128, margin: "0 auto" }}>
                         <CardMedia
                             sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
                             component="img"
-                            image={pokemonDetails?.sprites?.other?.dream_world?.front_default}
+                            image={combinePokemonDetailsData?.sprites?.other?.dream_world?.front_default}
                             alt={pokemonName}
                         />
-                        <p className='name'>{ pokemonDetails?.name }</p>
+                        <p className='name'>{ combinePokemonDetailsData?.name }</p>
                     </CardContent>
                 ) : (
                     <CardContent>
@@ -71,25 +69,25 @@ const PokemonCard = (props) => {
                             <SvgIcon aria-label="height" sx={{ padding: 0 }}>
                                 <Height sx={{ height: 38, width: 38 }} />
                             </SvgIcon>
-                            <span>{pokemonDetails?.height} M</span>
+                            <span>{combinePokemonDetailsData?.height} M</span>
                         </div>
                         <div className='weight'>
                             <SvgIcon aria-label="weight" sx={{ padding: 0 }}>
                                 <Weight sx={{ height: 38, width: 38 }} />
                             </SvgIcon>
-                            <span>{pokemonDetails?.weight} LBS</span>
+                            <span>{combinePokemonDetailsData?.weight} LBS</span>
                         </div>
                     </div>
                     <CardContent sx={{ width: 182, height: 182, margin: "0 auto" }}>
                         <CardMedia
                             sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
                             component="img"
-                            image={pokemonDetails?.sprites?.other?.dream_world?.front_default}
+                            image={combinePokemonDetailsData?.sprites?.other?.dream_world?.front_default}
                             alt={pokemonName}
                         />
                     </CardContent>
-                    <p className='name'>{ pokemonDetails?.name }</p>
-                    <p className='description'>{pokemonDesc }</p>
+                    <p className='name'>{ combinePokemonDetailsData?.name }</p>
+                    <p className='description'>{ pokemonDescription }</p>
                 </CardContent>
                 )}
                 
