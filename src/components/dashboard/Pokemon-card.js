@@ -47,43 +47,40 @@ const PokemonCard = (props) => {
     if (!pokemonDetails || !pokemonDesc) {
         return <p>Loading...</p>;
     }
-
     const badge = Object.values(pokemonDetails?.types)?.map(_ => _.type.name)
-
-    console.log(badge, "pokemonDetails")
     return (
         <Card sx={{ height: 370 }} className={evolutionClass}>
             <Link to={`/pokemon/${pokemonDetails?.name}`}>
-            <CardContent>
-                <div className='header-wrap'>
-                    <div className='badge'>
-                            {badge.map(name => <span className={ `type-${name}`}>{ name }</span>)}
+                <CardContent>
+                    <div className='header-wrap'>
+                        <div className='badge'>
+                                {badge.map(name => <span className={ `type-${name}`}>{ name }</span>)}
+                        </div>
+                        <div className='height'>
+                            <SvgIcon aria-label="height" sx={{ padding: 0 }}>
+                                <Height sx={{ height: 38, width: 38 }} />
+                            </SvgIcon>
+                            <span>{pokemonDetails?.height} M</span>
+                        </div>
+                        <div className='weight'>
+                            <SvgIcon aria-label="weight" sx={{ padding: 0 }}>
+                                <Weight sx={{ height: 38, width: 38 }} />
+                            </SvgIcon>
+                            <span>{pokemonDetails?.weight} LBS</span>
+                        </div>
                     </div>
-                    <div className='height'>
-                        <SvgIcon aria-label="height" sx={{ padding: 0 }}>
-                            <Height sx={{ height: 38, width: 38 }} />
-                        </SvgIcon>
-                        <span>{pokemonDetails?.height} M</span>
-                    </div>
-                    <div className='weight'>
-                        <SvgIcon aria-label="weight" sx={{ padding: 0 }}>
-                            <Weight sx={{ height: 38, width: 38 }} />
-                        </SvgIcon>
-                        <span>{pokemonDetails?.weight} LBS</span>
-                    </div>
-                </div>
-                <CardContent sx={{ width: 182, height: 182, margin: "0 auto" }}>
-                    <CardMedia
-                        sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
-                        component="img"
-                        image={pokemonDetails?.sprites?.other?.dream_world?.front_default}
-                        alt={pokemonName}
-                    />
+                    <CardContent sx={{ width: 182, height: 182, margin: "0 auto" }}>
+                        <CardMedia
+                            sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
+                            component="img"
+                            image={pokemonDetails?.sprites?.other?.dream_world?.front_default}
+                            alt={pokemonName}
+                        />
+                    </CardContent>
+                    <p className='name'>{ pokemonDetails?.name }</p>
+                    <p className='description'>{pokemonDesc }</p>
                 </CardContent>
-                <p className='name'>{ pokemonDetails?.name }</p>
-                <p className='description'>{pokemonDesc }</p>
-                </CardContent>
-                </Link>
+            </Link>
         </Card>
     );
 }
