@@ -11,7 +11,7 @@ function App() {
     <div>
       <Header />
       </div>
-      <div className='wrapper'>
+      <div className='mt-20 wrapper'>
     <Router>
       <Routes>
         <Route path="/" element={<Dashboard />} />

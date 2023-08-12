@@ -9,7 +9,7 @@ import Search from "../searchbar/Searchbar";
 const Header = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" className="bg-red-500">
+        <AppBar position="fixed" className="bg-red-500">
           <Toolbar className="grid grid-flow-col">
             <div>
               <img src={logo} alt="Pokemon Logo" width="156" height="56"></img>
