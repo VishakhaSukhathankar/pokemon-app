@@ -1,6 +1,7 @@
 import "./App.css";
 import Header from "./common/header/Header";
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes, HashRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import Dashboard from "./components/dashboard/Dashboard";
 import PokemonDetails from "./components/Pokemon-details";
 
@@ -12,13 +13,13 @@ function App() {
       <Header />
       </div>
       <div className='wrapper'>
-    <Router>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/pokemon-app" element={<Dashboard />} />
         <Route path="/pokemon-app/pokemon/:name/:id/*" element={<PokemonDetails />} />
       </Routes>
-        </Router>
+        </HashRouter>
         </div>
   </div>
   );
