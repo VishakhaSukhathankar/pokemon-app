@@ -22,6 +22,7 @@ const PokemonDetails = () => {
     const [evolutionChain, setevolutionChain] = useState(null);
     const [combinePokemonDetailsData, setcombinePokemonDetailsData] = useState(null);
     const [pokemonIdDetails, setPokemonIdDetails] = useState(id);
+    console.log(name, "name")
 
     const combinePokemonData = () => {
         openDB("PokeAPICache", 1)
@@ -58,12 +59,13 @@ const PokemonDetails = () => {
     useEffect(() => {
         const endpoint = combinePokemonDetailsData?.evolution_chain?.url;
         fetch(endpoint).then(res => res.json()).then(response => setevolutionChain(response))
-    }, [combinePokemonDetailsData?.evolution_chain?.url], pokemonIdDetails)
+    }, [combinePokemonDetailsData?.evolution_chain?.url], pokemonIdDetails, name)
 
     const eggGroup = combinePokemonDetailsData?.egg_groups?.map(_ => _.name).join("  ");
     const abilities = combinePokemonDetailsData?.abilities?.map(_ => _.ability.name).join("  ");
     const storyDetail = combinePokemonDetailsData?.flavor_text_entries?.find(entry => entry.language.name === "en")?.flavor_text || "";
     function extractSpeciesNames(obj, result = []) {
+        console.log(obj, "obj")
         if (obj?.species && obj?.species?.name) {
           result.push(obj?.species?.name);
         }
@@ -75,7 +77,7 @@ const PokemonDetails = () => {
         return result;
       }
     const allSpeciesNames = extractSpeciesNames(evolutionChain?.chain);
-    console.log(pokemonIdDetails, "combinePokemonDetailsData")
+    console.log(combinePokemonDetailsData, "combinePokemonDetailsData")
     return (combinePokemonDetailsData ? (
         <section className='pokemon-detail-page'>
             <Box sx={{ flexGrow: 1 }}>
@@ -83,18 +85,22 @@ const PokemonDetails = () => {
                     <Grid item xs={16} sm={8} md={4} lg={4} xl={4}>
                         <PokemonCard pokemonName={combinePokemonDetailsData?.name} classIdentifier="detail-section-left" />                        
                         <div className="pagination">
-                            <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails - 1)}>
-                                <span className="arw-left">
-                                    <ArrowLeft />
-                                </span>
-                                {` Prev #${String(+pokemonIdDetails - 1).padStart(4, '0')}`}
-                            </Button>
-                            <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails + 1)}>
-                                {`Next #${String(+pokemonIdDetails + 1).padStart(4, '0')}`}
-                                <span className="arw-right">
-                                    <ArrowRight />
-                                </span>
-                            </Button>
+                        <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
+                                <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails - 1)}>
+                                    <span className="arw-left">
+                                        <ArrowLeft />
+                                    </span>
+                                    {` Prev #${String(+pokemonIdDetails - 1).padStart(4, '0')}`}
+                                </Button>
+                            </Link>
+                            <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
+                                <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails + 1)}>
+                                    {`Next #${String(+pokemonIdDetails + 1).padStart(4, '0')}`}
+                                    <span className="arw-right">
+                                        <ArrowRight />
+                                    </span>
+                                </Button>
+                            </Link>
                         </div>
                     </Grid>
                     <Grid item xs={16} sm={8} md={12} lg={12} xl={12}>
@@ -102,7 +108,11 @@ const PokemonDetails = () => {
                             <div className='detail-wrap'>
                                     <h3 className='detail-title'>Versions</h3>
                                     <div className='version-details'>
-                                        {allSpeciesNames.map((name, ind)=> <Link key={ind} to={`/pokemon/${name}${id}`}><p className='detail-desc'>{name}</p></Link>)}
+                                    {allSpeciesNames.map((name, ind) => {
+                                        const currentPokemonId = combinePokemonDetailsData
+                                        console.log(currentPokemonId, "currentPokemonId")
+                                        return <Link key={ind} onClick={() => setPokemonIdDetails(combinePokemonDetailsData?.id)} to={`/pokemon/${name}/${combinePokemonDetailsData?.id}`}><p className='detail-desc'>{name}</p></Link>
+                                    })}
                                     </div>
                             </div>
                             <div className='detail-wrap'>
