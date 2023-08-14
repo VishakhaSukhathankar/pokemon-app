@@ -85,7 +85,7 @@ const PokemonDetails = () => {
                     <Grid item xs={16} sm={8} md={4} lg={4} xl={4}>
                         <PokemonCard pokemonName={combinePokemonDetailsData?.name} classIdentifier="detail-section-left" />                        
                         <div className="pagination">
-                        <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
+                        <Link to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
                                 <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails - 1)}>
                                     <span className="arw-left">
                                         <ArrowLeft />
@@ -93,7 +93,7 @@ const PokemonDetails = () => {
                                     {` Prev #${String(+pokemonIdDetails - 1).padStart(4, '0')}`}
                                 </Button>
                             </Link>
-                            <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
+                            <Link to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}>
                                 <Button variant="contained" onClick={() => setPokemonIdDetails(+pokemonIdDetails + 1)}>
                                     {`Next #${String(+pokemonIdDetails + 1).padStart(4, '0')}`}
                                     <span className="arw-right">
@@ -111,7 +111,7 @@ const PokemonDetails = () => {
                                     {allSpeciesNames.map((name, ind) => {
                                         const currentPokemonId = combinePokemonDetailsData
                                         console.log(currentPokemonId, "currentPokemonId")
-                                        return <Link key={ind} onClick={() => setPokemonIdDetails(combinePokemonDetailsData?.id)} to={`/pokemon/${name}/${combinePokemonDetailsData?.id}`}><p className='detail-desc'>{name}</p></Link>
+                                        return <Link key={ind} onClick={() => setPokemonIdDetails(combinePokemonDetailsData?.id)} to={`/pokemon-app/pokemon/${name}/${combinePokemonDetailsData?.id}`}><p className='detail-desc'>{name}</p></Link>
                                     })}
                                     </div>
                             </div>

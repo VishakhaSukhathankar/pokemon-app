@@ -64,7 +64,7 @@ const PokemonCard = (props) => {
     return (combinePokemonDetailsData ? (
         <Card sx={{ height: classIdentifier !== "detail-section-left" ? 370 : "auto" }} className={classIdentifier}>
                 {classIdentifier === "evolution-chain" ? (
-                    <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
+                    <Link to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
                         <CardContent className="evolution-wrap" sx={{ width: 128, height: 128, margin: "0 auto" }} >
                             <CardMedia
                                 sx={{ maxWidth: "100%", width: "auto", height: "100%", margin: "0 auto" }}
@@ -128,7 +128,7 @@ const PokemonCard = (props) => {
                             </Grid>
                     </CardContent>
                 ) : (                        
-                <Link to={`/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
+                <Link to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}>
                     <CardContent>
                         <div className='header-wrap'>
                             <div className='badge'>
