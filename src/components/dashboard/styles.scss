@@ -148,7 +148,12 @@
             }
         }
     }
-
+}
+.dashboard-pagination{
+    @media all and (max-width:900px) {
+        position: absolute;
+        left: 414px;
+    }
 }
 .type-normal {
     background-color: #A8A878;
