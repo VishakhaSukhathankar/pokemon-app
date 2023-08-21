@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Grid, Button } from "@mui/material";
 import PokemonCard from "./Pokemon-card";
-import { ArrowLeft, ArrowRight } from "../../assets";
+import { ArrowLeft, ArrowRight, DarkArrowRight, DarkArrowLeft } from "../../assets";
 import {
   openDB,
   cacheData,
   getCachedData,
 } from "../../utils/helpers/IndexedDBUtility";
 import "./styles.scss";
+import classnames from "classnames";
 
 const Dashboard = ({ isDark }) => {
   const [data, setData] = useState([]);
@@ -55,21 +56,24 @@ const Dashboard = ({ isDark }) => {
           </Grid>
         ))}
       </Grid>
-      <div className="pagination dashboard-pagination">
+      <div className={classnames("pagination  dashboard-pagination",{
+          "pagination-dark" : isDark
+        })}>
         <Button
           disabled={pageNumber <= 0}
           onClick={handlePrevClick}
           variant="contained"
         >
           <span className="arw-left">
-            <ArrowLeft />
+            {isDark ? <DarkArrowLeft/> : <ArrowLeft />}
+            
           </span>{" "}
           Prev
         </Button>
         <Button onClick={handleNextClick} variant="contained">
           Next{" "}
           <span className="arw-right">
-            <ArrowRight />
+            {isDark ? <DarkArrowRight/> : <ArrowRight />}
           </span>
         </Button>
       </div>

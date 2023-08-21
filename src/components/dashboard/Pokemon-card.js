@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardMedia, CardContent, SvgIcon, Grid } from "@mui/material";
-import { Weight, Height } from "../../assets";
+import { Weight, Height, DarkWeight, DarkHeight } from "../../assets";
 import { Link } from "react-router-dom";
 import {
   openDB,
@@ -11,8 +11,9 @@ import LinearProgress, {
   linearProgressClasses,
 } from "@mui/material/LinearProgress";
 import { styled } from "@mui/material/styles";
+import classnames from "classnames";
 
-const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
+const BorderLinearProgress = styled(LinearProgress)(({ theme, isDark }) => ({
   height: 5,
   width: 120,
   borderRadius: 5,
@@ -23,7 +24,7 @@ const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
   },
   [`& .${linearProgressClasses.bar}`]: {
     borderRadius: 5,
-    backgroundColor: theme.palette.mode === "light" ? "#EE3F3E" : "#EE3F3E",
+    backgroundColor: isDark ? "#A1B2DF" : "#EE3F3E",
   },
 }));
 
@@ -87,13 +88,13 @@ const PokemonCard = (props) => {
       sx={{ height: classIdentifier !== "detail-section-left" ? 370 : "auto" }}
       className={classIdentifier}
     >
-      {classIdentifier === "evolution-chain" ? (
+      {classIdentifier === "evolution-chain" || classIdentifier === "evolution-chain-dark" ? (
         <Link
           to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${combinePokemonDetailsData?.id}`}
         >
           <CardContent
             className="evolution-wrap"
-            sx={{ width: 128, height: 128, margin: "0 auto" , background:  isDark  ? '#333333' : '#ffffff' }}
+            sx={{ width: 128, height: 128, margin: "0 auto"}}
           >
             <CardMedia
               sx={{
@@ -109,7 +110,9 @@ const PokemonCard = (props) => {
               }
               alt={pokemonName}
             />
-            <p className="name">{combinePokemonDetailsData?.name}</p>
+            <p className={classnames("name",{
+              "name-dark" : isDark
+            })}>{combinePokemonDetailsData?.name}</p>
           </CardContent>
         </Link>
       ) : classIdentifier === "detail-section-left" ? (
@@ -140,20 +143,26 @@ const PokemonCard = (props) => {
             />
           </CardContent>
           <div className="section-left-header-wrap">
-            <div className="height">
+            <div className={classnames("height",{
+              "height-dark" : isDark
+            })}>
               <SvgIcon aria-label="height" sx={{ padding: 0 }}>
-                <Height sx={{ height: 38, width: 38 }} />
+                {isDark ? <DarkHeight sx={{ height: 38, width: 38 }} /> : <Height sx={{ height: 38, width: 38 }} />}
               </SvgIcon>
               <span>{combinePokemonDetailsData?.height} M</span>
             </div>
-            <div className="weight">
+            <div className={classnames("weight",{
+              "weight-dark" : isDark
+            })}>
               <SvgIcon aria-label="weight" sx={{ padding: 0 }}>
-                <Weight sx={{ height: 38, width: 38 }} />
+              {isDark ? <DarkWeight sx={{ height: 38, width: 38 }} /> : <Weight sx={{ height: 38, width: 38 }} />}
               </SvgIcon>
               <span>{combinePokemonDetailsData?.weight} LBS</span>
             </div>
           </div>
-          <p className="name">{combinePokemonDetailsData?.name}</p>
+          <p className={classnames("name",{
+            "name-dark" : isDark
+          })}>{combinePokemonDetailsData?.name}</p>
           <Grid
             container
             spacing={4}
@@ -170,14 +179,19 @@ const PokemonCard = (props) => {
               return (
                 <Grid item xs={6} md={6} lg={6} xl={6} key={ind}>
                   <div className="progress-textwrap">
-                    <span className="float-left stat-name">{statName}</span>
-                    <div className="details-weight stat-val">
+                    <span className={classnames("float-left stat-name",{
+                      "stat-name-dark" : isDark
+                    })}>{statName}</span>
+                    <div className={classnames("details-weight stat-val",{
+                      "stat-val-dark" : isDark
+                    })}>
                       <span>{val.base_stat}</span>
                     </div>
                   </div>
                   <BorderLinearProgress
                     variant="determinate"
                     value={(val.base_stat * 100) / 255}
+                    isDark={isDark}
                   />
                 </Grid>
               );
@@ -197,15 +211,19 @@ const PokemonCard = (props) => {
                   </span>
                 ))}
               </div>
-              <div className="height">
+              <div className={classnames("height",{
+              "height-dark" : isDark
+            })}>
                 <SvgIcon aria-label="height" sx={{ padding: 0 }}>
-                  <Height sx={{ height: 38, width: 38 }} />
+                {isDark ? <DarkHeight sx={{ height: 38, width: 38 }} /> : <Height sx={{ height: 38, width: 38 }} />}
                 </SvgIcon>
                 <span>{combinePokemonDetailsData?.height} M</span>
               </div>
-              <div className="weight">
+              <div className={classnames("weight",{
+              "weight-dark" : isDark
+            })}>
                 <SvgIcon aria-label="weight" sx={{ padding: 0 }}>
-                  <Weight sx={{ height: 38, width: 38 }} />
+                  {isDark ? <DarkWeight sx={{ height: 38, width: 38 }} /> : <Weight sx={{ height: 38, width: 38 }} />}
                 </SvgIcon>
                 <span>{combinePokemonDetailsData?.weight} LBS</span>
               </div>
@@ -226,7 +244,9 @@ const PokemonCard = (props) => {
                 alt={pokemonName}
               />
             </CardContent>
-            <p className="name">{combinePokemonDetailsData?.name}</p>
+            <p className={classnames("name",{
+              "name-dark" : isDark
+            })}>{combinePokemonDetailsData?.name}</p>
             <p className="description">{pokemonDescription}</p>
           </CardContent>
         </Link>

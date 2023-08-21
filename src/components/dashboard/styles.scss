@@ -18,27 +18,38 @@
             margin: 0 4px 0 0;
         }
     }
-    .evolution-chain{
+    .evolution-chain, .evolution-chain-dark{
         background:url('../../assets/shadow.svg') no-repeat top left;
         background-size: 100%;
         width: 195px;
         height: 250px;
         box-shadow: none;
         margin-left: -30px;
+        &-dark{
+            background:url('../../assets/dark-shadow.svg') no-repeat top left;
+            .evolution-wrap{
+                .name{
+                    color: #A1B2DF;
+                }
+            }
+        }
         .evolution-wrap{
             width: 140px;
             height: 128px;
             border-radius: 100%;
             margin-top: 37px;
+            background-color: transparent;
             .name{
                 margin-top: 35px;
-                color: #146845;
                 text-align: center;
                 font-family: PT Sans;
                 font-size: 24px;
                 font-style: normal;
                 font-weight: 400;
-                line-height: 32px; /* 133.333% */
+                line-height: 32px;
+                &-dark{
+                    color: #A1B2DF;
+                }
             }
         }
     }
@@ -51,6 +62,9 @@
         line-height: 32px;
         text-transform: capitalize;
         margin: 16px 0 8px 0;
+        &-dark{
+            color: #A1B2DF;
+        }
     }
     .description{
         color: #C7C7C7;
@@ -75,6 +89,9 @@
             line-height: 20px;
             text-transform: uppercase;
             text-align: right;
+            &-dark{
+                color: #C7C7C7;
+            }
             svg{
                 display: inline-block;
                 vertical-align: middle;
@@ -98,6 +115,9 @@
             font-weight: 700;
             line-height: 20px;
             text-transform: uppercase;
+            &-dark{
+                color: #C7C7C7;
+            }
             svg{
                 display: inline-block;
                 vertical-align: middle;
@@ -145,6 +165,12 @@
             .arw-left{
                 padding: 0 8px 0 0;
                 display: inline-block;
+            }
+        }
+        &-dark{
+            button{
+                color: #A1B2DF;
+                background-color: #333539;
             }
         }
     }

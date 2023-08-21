@@ -6,22 +6,15 @@ import {
   openDB,
   cacheData,
 } from "../utils/helpers/IndexedDBUtility";
-import { styled } from "@mui/material/styles";
 import { Link } from "react-router-dom";
 import EvoultionChain from "./evolution/evolution-chain";
 import PokemonCard from "./dashboard/Pokemon-card";
-import { ArrowLeft, ArrowRight } from "../assets";
+import { ArrowLeft, ArrowRight, DarkArrowRight, DarkArrowLeft } from "../assets";
+import classnames from "classnames";
 import "./styles.scss";
 
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: "center",
-  color: theme.palette.text.secondary,
-}));
-
 const PokemonDetails = ({ isDark }) => {
+  console.log(isDark, "isDark")
   const { name, id } = useParams();
   const [evolutionChain, setevolutionChain] = useState(null);
   const [combinePokemonDetailsData, setcombinePokemonDetailsData] =
@@ -112,13 +105,15 @@ const PokemonDetails = ({ isDark }) => {
     <section className="pokemon-detail-page">
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={2} columns={16}>
-          <Grid item xs={16} sm={8} md={4} lg={4} xl={4}>
+          <Grid item xs={16} sm={8} md={4} lg={4} xl={4} sx={{ flexDirection: { xs: "column", md: "row"} }}>
             <PokemonCard
               pokemonName={combinePokemonDetailsData?.name}
               classIdentifier="detail-section-left"
               isDark={isDark}
             />
-            <div className="pagination">
+            <div className={classnames("pagination",{
+                    "pagination-dark" : isDark
+                  })}>
               <Link
                 to={`/pokemon-app/pokemon/${combinePokemonDetailsData?.name}/${pokemonIdDetails}`}
               >
@@ -127,7 +122,7 @@ const PokemonDetails = ({ isDark }) => {
                   onClick={() => setPokemonIdDetails(+pokemonIdDetails - 1)}
                 >
                   <span className="arw-left">
-                    <ArrowLeft />
+                  {isDark ? <DarkArrowLeft/> : <ArrowLeft />}
                   </span>
                   {` Prev #${String(+pokemonIdDetails - 1).padStart(4, "0")}`}
                 </Button>
@@ -141,19 +136,21 @@ const PokemonDetails = ({ isDark }) => {
                 >
                   {`Next #${String(+pokemonIdDetails + 1).padStart(4, "0")}`}
                   <span className="arw-right">
-                    <ArrowRight />
+                    {isDark ? <DarkArrowRight/> : <ArrowRight />}
                   </span>
                 </Button>
               </Link>
             </div>
           </Grid>
           <Grid item xs={16} sm={8} md={12} lg={12} xl={12}>
-            <Item
+            <Paper
               className="pokemon-details"
               sx={{ background: isDark ? "#333333" : "#ffffff" }}
             >
               <div className="detail-wrap">
-                <h3 className="detail-title">Versions</h3>
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Versions</h3>
                 <div className="version-details">
                   {allSpeciesNames.map((name, ind) => {
                     const currentPokemonId = combinePokemonDetailsData;
@@ -166,7 +163,9 @@ const PokemonDetails = ({ isDark }) => {
                         }
                         to={`/pokemon-app/pokemon/${name}/${combinePokemonDetailsData?.id}`}
                       >
-                        <p className="detail-desc">{name}</p>
+                        <p className={classnames("detail-desc",{
+                          "detail-desc-dark" : isDark
+                        })}>{name}</p>
                       </Link>
                     );
                   })}
@@ -176,28 +175,46 @@ const PokemonDetails = ({ isDark }) => {
                 className="detail-wrap"
                 sx={{ background: isDark ? "#333333" : "#ffffff" }}
               >
-                <h3 className="detail-title">Story</h3>
-                <p className="detail-desc">{storyDetail}</p>
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Story</h3>
+                <p className={classnames("detail-desc",{
+                    "detail-desc-dark" : isDark
+                  })}></p>
               </div>
               <div className="detail-wrap">
-                <h3 className="detail-title">Abilities</h3>
-                <p className="detail-desc">{abilities}</p>
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Abilities</h3>
+                <p className={classnames("detail-desc",{
+                    "detail-desc-dark" : isDark
+                  })}>{abilities}</p>
               </div>
               <div className="detail-wrap">
-                <h3 className="detail-title">Catch Rate</h3>
-                <p className="detail-desc">
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Catch Rate</h3>
+                <p className={classnames("detail-desc",{
+                    "detail-desc-dark" : isDark
+                  })}>
                   {combinePokemonDetailsData?.capture_rate}%
                 </p>
               </div>
               <div className="detail-wrap">
-                <h3 className="detail-title">Egg group</h3>
-                <p className="detail-desc">{eggGroup}</p>
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Egg group</h3>
+                <p className={classnames("detail-desc",{
+                    "detail-desc-dark" : isDark
+                  })}>{eggGroup}</p>
               </div>
               <div className="detail-wrap">
-                <h3 className="detail-title">Evolution</h3>
-                <EvoultionChain name={allSpeciesNames} />
+                <h3 className={classnames("detail-title",{
+                    "detail-title-dark" : isDark
+                  })}>Evolution</h3>
+                <EvoultionChain name={allSpeciesNames} isDark={isDark} />
               </div>
-            </Item>
+            </Paper>
           </Grid>
         </Grid>
       </Box>
